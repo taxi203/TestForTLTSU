@@ -1,0 +1,61 @@
+
+<button id="CalcDist_but">рассчитать расстояния между выбранными</button>
+<div id="CalcResult"></div>
+
+<table class="ObjsList">
+  {foreach from=$ObjsList item=obj}
+    <tr>
+      <td><input type="checkbox" id="{$obj.id}" data-long="{$obj.c_x}" data-lat="{$obj.c_y}" /></td>
+      <td><label for="{$obj.id}"> {$obj.obj_name}</label></td>
+      <td>{$obj.create_t}</td>      
+      <td style="color:green;">{$obj.c_x|number_format:6} <br/> {$obj.c_y|number_format:6}</td>
+    </tr>
+  {/foreach}
+</table>
+
+
+<style>
+table.ObjsList td { padding:3px 11px; }
+table.ObjsList tr:hover { background-color: #ffffd0 }
+table.ObjsList tr.row_selected { background-color: #e6f7e6; }
+table.ObjsList label { width:100%; }
+table.ObjsList label:hover { background:#b2e7b2;}
+
+#CalcResult { color:red;}
+
+
+</style>
+
+<script>
+$(".ObjsList input[type=checkbox]").on("change", function(){
+  
+  $(this).closest("tr").toggleClass("row_selected");
+  
+  if ($('.ObjsList input[type=checkbox]:checked').length >= 2)
+    $('.ObjsList input[type=checkbox]:not(:checked)').attr('disabled', "disabled");
+  else
+    $('.ObjsList input[type=checkbox]:disabled').removeAttr('disabled');
+});
+
+$("#CalcDist_but").on("click", function() {
+  var sel = $('.ObjsList input[type=checkbox]:checked');
+  if (sel.length < 2)
+    $("#CalcResult").text("выберете 2 объекта");
+  else {
+    $("#CalcResult").text("");
+    //console.log();
+    $.ajax({ url:"http://rem-mastera.ru/ajax?av_CalcDist",
+      data: { 
+	long0:sel.eq(0).data("long"), 
+	lat0:sel.eq(0).data("lat"), 
+	long1:sel.eq(1).data("long"), 
+	lat1:sel.eq(1).data("lat") },
+      success: function(res){
+	$("#CalcResult").html(res);
+      }
+    });
+    
+  }
+});
+
+</script>

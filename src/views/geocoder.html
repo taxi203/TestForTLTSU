@@ -1,0 +1,68 @@
+
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" ></script>
+
+<h1>тестовое задание</h1>
+<hr/>
+
+
+<div class="row">
+  <div class="col-md-5">
+    <input type="text" name="GeoName" placeholder="название гео-объекта" />
+    <button id="SearchBtn">искать</button>
+    <hr/>
+    <div id="GeocodeRes"></div>
+  </div>  
+
+  <div class="col-md-7" id="ObjsList"></div>
+  
+</div>
+
+<script>
+$(function(){
+  $("#SearchBtn").on("click", function(){
+    var GeoName = $("input[name=GeoName]").val();
+    var Geocoder = ymaps.geocode(GeoName);
+    Geocoder.then(function (res) {
+      objs = res.geoObjects.toArray();
+      var res = '';
+      for(i=0; i < objs.length; i++){
+	var o = objs[i].properties.getAll();	
+	//console.log(o.metaDataProperty.GeocoderMetaData.id);
+	//console.log(o.boundedBy);	
+	res += '<div><button class="AddAddr_btn" data-i="'+i+'" ><span class="glyphicon glyphicon-check"></span>  add </button> '+o.text+'</div>';
+      }
+      $("#GeocodeRes").html(res);
+    });    
+  });
+  
+  LoadObjsList();
+});
+
+$(document).on("click", ".AddAddr_btn", function(){
+  var i = $(this).data('i');
+  var obj = objs[i].properties.getAll();
+  
+  $.ajax({ method: 'post',
+    url:'http://rem-mastera.ru/ajax?av_AddGeoObj',
+    data: {
+      text: obj.text,
+      boundedBy: obj.boundedBy,
+      id: obj.metaDataProperty.GeocoderMetaData.id,      
+    },
+    success: function(res){
+      console.log(res);
+      LoadObjsList();      
+    },
+  });
+});
+
+function LoadObjsList(){
+  $.ajax({ url:'http://rem-mastera.ru/ajax?av_GeoObjsList',
+    success: function(res){
+      $("#ObjsList").html(res);
+    }
+  });
+}
+
+</script>
+
